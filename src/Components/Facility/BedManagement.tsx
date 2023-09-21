@@ -6,7 +6,6 @@ import {
   getAnyFacility,
   getFacilityAssetLocation,
   listFacilityBeds,
-  deleteFacilityBed,
 } from "../../Redux/actions";
 import Pagination from "../Common/Pagination";
 import ButtonV2 from "../Common/components/ButtonV2";
@@ -18,6 +17,8 @@ import BedDeleteDialog from "./BedDeleteDialog";
 import { NonReadOnlyUsers } from "../../Utils/AuthorizeFor";
 import CareIcon from "../../CAREUI/icons/CareIcon";
 import Page from "../Common/components/Page";
+import request from "../../Utils/request/request";
+import routes from "../../Redux/api";
 const Loading = lazy(() => import("../Common/Loading"));
 
 interface BedManagementProps {
@@ -48,7 +49,6 @@ const BedRow = (props: BedRowProps) => {
     isOccupied,
   } = props;
 
-  const dispatchAction: any = useDispatch();
   const [bedData, setBedData] = useState<{
     show: boolean;
     name: string;
@@ -62,16 +62,22 @@ const BedRow = (props: BedRowProps) => {
   };
 
   const handleDeleteConfirm = async () => {
-    const res = await dispatchAction(deleteFacilityBed(id));
-    if (res?.status === 204) {
-      Notification.Success({
-        msg: "Bed deleted successfully",
-      });
-    } else {
-      Notification.Error({
-        msg: "Error while deleting Bed: " + (res?.data?.detail || ""),
-      });
-    }
+    await request(routes.deleteFacilityBed, {
+      pathParams: { external_id: id },
+      onResponse: ({ res, error }) => {
+        if (res?.status === 204) {
+          Notification.Success({
+            msg: "Bed deleted successfully",
+          });
+          return;
+        }
+
+        Notification.Error({
+          msg: "Error while deleting Bed: " + (error?.detail || ""),
+        });
+      },
+    });
+
     setBedData({ show: false, name: "" });
     triggerRerender();
   };

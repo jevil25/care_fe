@@ -11,6 +11,8 @@ function Res<T>(): T {
   return {} as T;
 }
 
+const NoResponse = Res<void>();
+
 interface JwtTokenObtainPair {
   access: string;
   refresh: string;
@@ -273,6 +275,7 @@ const routes = {
   deleteFacilityBed: {
     path: "/api/v1/bed/{external_id}/",
     method: "DELETE",
+    TRes: NoResponse,
   },
 
   // Consultation beds
